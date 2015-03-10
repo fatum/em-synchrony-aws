@@ -1,24 +1,10 @@
-# EmAws
+# EM-Synchrony-AWS
+
 An EM-Synchrony handler for Ruby [AWS-SDK-Ruby](https://github.com/aws/aws-sdk-ruby)
-## Installation
 
-em_aws is available through [Rubygems](https://rubygems.org/gems/em_aws) and can be installed via:
+Add em-synchrony-aws to your gemfile:
 
-    $ gem install em_aws
-
-### Requirements
-
-  * EmAws 0.3.x requires AWS-SDK-Ruby >= 1.9.3
-  * EmAws 0.2.x is available for those using AWS-SDK-Ruby <= 1.8.5
-  * AWS-SDK-Ruby 1.9.0 to 1.9.2 are not compatible with any version of EmAws; see [here](https://github.com/aws/aws-sdk-ruby/issues/237)
-
-## Rails 3 setup
-
-Setup [AWS-SDK-Ruby](https://github.com/aws/aws-sdk-ruby/blob/master/README.rdoc) as you would normally.
-
-Assuming you've already setup async-rails, add em_aws to your gemfile:
-
-    gem 'em_aws'
+    gem 'em-synchrony-aws', github: 'fatum/em-synchrony-aws'
 
 Then run:
 
@@ -28,14 +14,14 @@ Add the following to your aws.rb initializer:
 
     require 'aws-sdk'
     require 'aws/core/http/em_http_handler'
+    
     AWS.config(
-    :http_handler => AWS::Http::EMHttpHandler.new(
-         :proxy => { :host => '127.0.0.1',  # proxy address
-            :port => 9000,                  # proxy port
-            :type => :socks5 },
-       :pool_size => 20,   # Default is 0, set to > 0 to enable pooling
-       :async => false))   # If set to true all requests are handle asynchronously 
-                           # and initially return nil
+        http_handler: AWS::Http::EMHttpHandler.new(
+            proxy: { host: '127.0.0.1',  # proxy address
+            port: 9000,                  # proxy port
+            type: :socks5 },
+       pool_size: 20,   # Default is 0, set to > 0 to enable pooling
+       async: false))   # If set to true all requests are handle asynchronously and initially return nil
 
 You are done.
 
@@ -43,7 +29,9 @@ All requests to AWS will use EM-Synchrony's implementation of em-http-request fo
 
 ## Connection Pooling (keep-alive)
 
-We use `EM::Synchrony::ConnectionPool` to manage connection pooling. To enable connection pooling set the :pool_size to anything greater than 0.    require 'aws-sdk'
+We use `EM::Synchrony::ConnectionPool` to manage connection pooling. To enable connection pooling set the :pool_size to anything greater than 0.    
+
+    require 'aws-sdk'
     require 'aws/core/http/em_http_handler'
     AWS.config(
       http_handler: AWS::Http::EMHttpHandler.new(
@@ -89,9 +77,7 @@ all requests will be handled asynchronously.
 
   [AWS-SDK-Ruby](https://github.com/aws/aws-sdk-ruby)
 
-  [Async-Rails](https://github.com/igrigorik/async-rails)
-
-  [Phat](http://www.mikeperham.com/2010/04/03/introducing-phat-an-asynchronous-rails-app/)
+  [EM-Synchrony](https://github.com/igrigorik/em-synchrony)
 
 ## Contributing to em_aws
  
