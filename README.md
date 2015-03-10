@@ -17,11 +17,11 @@ em_aws is available through [Rubygems](https://rubygems.org/gems/em_aws) and can
 Setup [AWS-SDK-Ruby](https://github.com/aws/aws-sdk-ruby/blob/master/README.rdoc) as you would normally.
 
 Assuming you've already setup async-rails, add em_aws to your gemfile:
-    
+
     gem 'em_aws'
 
 Then run:
-    
+
     bundle install
 
 Add the following to your aws.rb initializer:
@@ -37,37 +37,32 @@ Add the following to your aws.rb initializer:
        :async => false))   # If set to true all requests are handle asynchronously 
                            # and initially return nil
 
-You are done. 
+You are done.
 
 All requests to AWS will use EM-Synchrony's implementation of em-http-request for non-block HTTP requests and fiber management. See [EM-HTTP-Request](https://github.com/igrigorik/em-http-request/wiki/Issuing-Requests#available-connection--request-parameters) for all client options
 
 ## Connection Pooling (keep-alive)
 
-We use [HotTub](https://github.com/JoshMcKin/hot_tub) to manage connection pooling. To enable connection pooling set the :pool_size to anything greater than 0. By default :inactivity_timeout is set to 0 which will leave the connection open for as long as the client allows. Connects
-are created lazy, so pools grow until they meet the set pool size.
-    
-    require 'aws-sdk'
+We use `EM::Synchrony::ConnectionPool` to manage connection pooling. To enable connection pooling set the :pool_size to anything greater than 0.    require 'aws-sdk'
     require 'aws/core/http/em_http_handler'
     AWS.config(
-      :http_handler => AWS::Http::EMHttpHandler.new({
-        :pool_size => 20,
-        :inactivity_timeout => 0, # number of seconds to timeout stale connections in the pool,
-        :never_block => true) # if we run out of connections, create a new one
-    )
+      http_handler: AWS::Http::EMHttpHandler.new(
+        pool_size: 20
+    ))
 
 ## Streaming
 Streaming from disk,You can pass an IO object in the :data option instead but the object must 
 respond to :path. We cannot stream from memory at this time.
 
     EM.synchrony do
-      s3 = AWS::S3.new 
+      s3 = AWS::S3.new
       s3.buckets['bucket_name'].objects["foo.txt"].write(:file => "path_to_file")
       EM.stop
     end
 
     # Stream from AWS
     EM.synchrony do
-      s3 = AWS::S3.new 
+      s3 = AWS::S3.new
       s3.buckets['bucket_name'].objects["foo.txt"].read do |chunk|
         puts chunk
       end
