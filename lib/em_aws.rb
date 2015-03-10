@@ -1,3 +1,4 @@
+require 'em_aws/patches'
 require 'aws-sdk'
 require 'em_aws/version'
 require 'em-http'
