@@ -9,8 +9,8 @@ module AWS
           @client_options = client_options
         end
 
-        def request(url)
-          EM::HttpRequest.new(url, @client_options)
+        def request(url, method, opts)
+          EM::HttpRequest.new(url, @client_options).send(method, opts)
         end
       end
 
@@ -155,23 +155,24 @@ module AWS
         end
 
         def fetch_response(request, opts={}, &read_block)
-          method = "a#{request.http_method}".downcase.to_sym  # aget, apost, aput, adelete, ahead
+          method = if opts[:async]
+            "a#{request.http_method}".downcase.to_sym  # aget, apost, aput, adelete, ahead
+          else
+            request.http_method.to_s.downcase.to_sym
+          end
+
           url = fetch_url(request)
 
           if pool
-            req = pool.request(url).send(method, opts)
-            req.stream &read_block if block_given?
-
-            return EM::Synchrony.sync req unless opts[:async]
+            defer = pool.request(url, method, opts)
+            defer.stream &read_block if block_given? && opts[:async]
+            defer
           else
             clnt_opts = client_options.merge(:inactivity_timeout => request.read_timeout)
-            req = EM::HttpRequest.new(url, clnt_opts).send(method, opts)
-            req.stream &read_block if block_given?
-
-            return  EM::Synchrony.sync req unless opts[:async]
+            defer = EM::HttpRequest.new(url, clnt_opts).send(method, opts)
+            defer.stream &read_block if block_given? && opts[:async]
+            defer
           end
-
-          nil
         end
 
         # AWS needs all header keys downcased and values need to be arrays
