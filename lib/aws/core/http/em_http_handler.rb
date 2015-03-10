@@ -10,7 +10,9 @@ module AWS
         end
 
         def request(url)
-          EM::HttpRequest.new(url, @client_options)
+          req = EM::HttpRequest.new(url, @client_options)
+          req.timeout(@client_options[:inactivity_timeout] || 0.1)
+          req
         end
       end
 
