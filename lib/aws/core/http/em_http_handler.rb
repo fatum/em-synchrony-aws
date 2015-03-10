@@ -159,12 +159,10 @@ module AWS
           url = fetch_url(request)
 
           if pool
-            pool.execute(false) do |connection|
-              req = connection.request(url).send(method, opts)
-              req.stream &read_block if block_given?
+            req = pool.request(url).send(method, opts)
+            req.stream &read_block if block_given?
 
-              return EM::Synchrony.sync req unless opts[:async]
-            end
+            return EM::Synchrony.sync req unless opts[:async]
           else
             clnt_opts = client_options.merge(:inactivity_timeout => request.read_timeout)
             req = EM::HttpRequest.new(url, clnt_opts).send(method, opts)
