@@ -10,9 +10,7 @@ module AWS
         end
 
         def request(url)
-          req = EM::HttpRequest.new(url, @client_options)
-          req.timeout(@client_options[:inactivity_timeout] || 0.1)
-          req
+          EM::HttpRequest.new(url, @client_options)
         end
       end
 
@@ -162,6 +160,7 @@ module AWS
 
           if pool
             req = pool.request(url).send(method, opts)
+            req.timeout(client_options[:inactivity_timeout] || 0.1)
             req.stream &read_block if block_given?
 
             return EM::Synchrony.sync req unless opts[:async]
