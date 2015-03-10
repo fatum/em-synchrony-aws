@@ -162,13 +162,13 @@ module AWS
           end
 
           url = fetch_url(request)
+          clnt_opts = client_options.merge(:inactivity_timeout => request.read_timeout)
 
           if pool
-            defer = pool.request(url, method, opts)
+            defer = pool.request(url, method, clnt_opts)
             defer.stream &read_block if block_given? && opts[:async]
             defer
           else
-            clnt_opts = client_options.merge(:inactivity_timeout => request.read_timeout)
             defer = EM::HttpRequest.new(url, clnt_opts).send(method, opts)
             defer.stream &read_block if block_given? && opts[:async]
             defer
