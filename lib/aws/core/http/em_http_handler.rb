@@ -155,19 +155,23 @@ module AWS
         end
 
         def fetch_response(request, opts={}, &read_block)
-          method = request.http_method.downcase.to_sym  # aget, apost, aput, adelete, ahead
+          method = "a#{request.http_method}".downcase.to_sym  # aget, apost, aput, adelete, ahead
           url = fetch_url(request)
 
           if pool
-            p pool.pool_status.inspect
-            res = pool.request(url).send(method, opts)
+            req = pool.request(url).send(method, opts)
+            req.stream &read_block if block_given?
+
+            return EM::Synchrony.sync req unless opts[:async]
           else
             clnt_opts = client_options.merge(:inactivity_timeout => request.read_timeout)
             req = EM::HttpRequest.new(url, clnt_opts).send(method, opts)
             req.stream &read_block if block_given?
 
-            EM::Synchrony.sync req unless opts[:async]
+            return  EM::Synchrony.sync req unless opts[:async]
           end
+
+          nil
         end
 
         # AWS needs all header keys downcased and values need to be arrays
